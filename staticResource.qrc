@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/res">
+        <file>static/back.png</file>
+        <file>static/disk-icon.png</file>
+        <file>static/file.png</file>
+        <file>static/folder.png</file>
+    </qresource>
+</RCC>
