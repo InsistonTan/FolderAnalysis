@@ -14,6 +14,10 @@ void AnalysisWidget::updateProgress(int value){
 void AnalysisWidget::updateLabel(QString text){
     label->setText(text);
 }
+// 更新label2的槽函数
+void AnalysisWidget::updateLabel2(QString text){
+    label2->setText(text);
+}
 // 切换主窗口widget到文件夹详情页面的槽函数
 void AnalysisWidget::changeToFolderWidget(QString path, QList<FileInfo *> resultList){
     getMainWindow()->setCentralWidget(new FolderWidget(path, resultList));
@@ -34,6 +38,10 @@ AnalysisWidget::AnalysisWidget(QString path){
     label->setAlignment(Qt::AlignCenter);
     layout->addWidget(label);
 
+    label2 = new QLabel("");
+    label2->setAlignment(Qt::AlignCenter);
+    layout->addWidget(label2);
+
     layout->setAlignment(Qt::AlignVCenter);
     this->setLayout(layout);
 
@@ -43,6 +51,7 @@ AnalysisWidget::AnalysisWidget(QString path){
     // 绑定信号与槽
     connect(task, &AnalysisThread::updateProgressSignal, this, &AnalysisWidget::updateProgress);
     connect(task, &AnalysisThread::updateLabelSignal, this, &AnalysisWidget::updateLabel);
+    connect(task, &AnalysisThread::updateLabelSignal2, this, &AnalysisWidget::updateLabel2);
     connect(task, &AnalysisThread::changeWidgetSignal, this, &AnalysisWidget::changeToFolderWidget);
 
     // 线程任务开始

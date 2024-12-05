@@ -24,6 +24,12 @@ MainWidget::MainWidget(QMainWindow *parent)
 
     this->setStyleSheet("QWidget { background-color:white; }");
 
+    // 设置最大线程数为cpu核心线程数减一
+    int coreThreadSize = std::thread::hardware_concurrency();
+    qDebug("cpu逻辑核心数: %d", coreThreadSize);
+
+    getThreadPool()->setMaxThreadCount(coreThreadSize > 6 ?  coreThreadSize - 1 : 6);
+
     // 创建首页界面
     QWidget *centralWidget = new HomeWidget();
 

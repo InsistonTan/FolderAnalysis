@@ -11,9 +11,12 @@
 #include <QEvent>
 
 class HomeWidget : public QWidget{
-
+    Q_OBJECT
 public:
     HomeWidget();
+    ~HomeWidget();
+private:
+
 };
 
 #endif // HOME_WIDGET_H

@@ -4,12 +4,17 @@
 #include <QObject>
 #include <QLineEdit>
 
-class PathInputLineListener  : public QObject{
+class PathInputLineListener : public QObject{
+    Q_OBJECT
 private:
     QLineEdit *watchedItem;
 public:
     PathInputLineListener(QLineEdit *watchedItem);
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    ~PathInputLineListener(){}
+    //bool eventFilter(QObject *watched, QEvent *event) override;
+
+public slots:
+    void editLineSlot();
 };
 
 #endif // PATHINPUTLINELISTENER_H

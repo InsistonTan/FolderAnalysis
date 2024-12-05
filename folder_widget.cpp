@@ -1,69 +1,92 @@
 #include "folder_widget.h"
 #include "home_widget.h"
 #include "utils.h"
-#include "analysis_thread.h"
 #include "pathinputlinelistener.h"
 #include "globalvariable.h"
+#include "analysis_widget.h"
+#include <QProcess>
+#include <QTableView>
+#include <QStandardItemModel>
+#include <QStandardItem>
+#include <QHeaderView>
+#include <QMouseEvent>
 
 // 引入全局变量,主窗口
 //extern QMainWindow *mainWin;
 
 // 文件夹监听器
-class FolderMouseEventListener : public QObject{
-private:
-    // 监听的目标组件
-    QWidget *nameWidget;
-    QLabel *updateTime, *type, *size;
-public:
-    FolderMouseEventListener(QWidget *nameWidget, QLabel *updateTime, QLabel *type, QLabel *size){
-        this->nameWidget = nameWidget;
-        this->updateTime = updateTime;
-        this->type = type;
-        this->size = size;
-    }
+// 事件过滤器类，继承 QObject
+// class FolderMouseEventListener : public QObject {
+// private:
+//     QTableView *tableView;
+// public:
+//     FolderMouseEventListener(QTableView *tableView){
+//         this->tableView = tableView;
+//         // 启用鼠标追踪
+//         this->tableView->setMouseTracking(true);
+//     }
 
-    bool eventFilter(QObject *watched, QEvent *event) override{
-        if (event->type() == QEvent::Enter) {
-            // 鼠标进入
-            const QString styleStr = "QWidget{background-color:rgb(217, 238, 255);}";
-            nameWidget->setStyleSheet(styleStr);
-            updateTime->setStyleSheet(styleStr);
-            type->setStyleSheet(styleStr);
-            size->setStyleSheet(styleStr);
-            return true;
-        }else if(event->type() == QEvent::Leave){
-            // 鼠标离开
-            const QString styleStr = "QWidget{background-color:rgba(255, 255, 255, 0);}";
-            nameWidget->setStyleSheet(styleStr);
-            updateTime->setStyleSheet(styleStr);
-            type->setStyleSheet(styleStr);
-            size->setStyleSheet(styleStr);
-            return true;
-        }else if(event->type() == QEvent::MouseButtonPress){
-            // 鼠标点击事件
-            //qDebug() << nameWidget->objectName();
+//     // 重写 eventFilter 来处理事件
+//     bool eventFilter(QObject *watched, QEvent *event) override {
+//         qDebug("eventType: %d", event->type());
+//         if (event->type() == QEvent::MouseMove) {
+//             qDebug("mouse move");
 
-            // 检查缓存
-            MyUtils::checkCache(nameWidget->objectName());
+//             // 处理鼠标悬停效果
+//             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
+//             QModelIndex index = tableView->indexAt(mouseEvent->pos());
 
-            return true;
-        }
+//             if (index.isValid()) {
+//                 int row = index.row();
 
-        return false;
-    }
-};
+//                 qDebug() << "Mouse hovering over row:" << row;
+
+//                 // 获取模型并设置行背景颜色
+//                 QStandardItemModel *standardModel = qobject_cast<QStandardItemModel *>(tableView->model());
+//                 if (standardModel) {
+//                     for (int r = 0; r < standardModel->rowCount(); ++r) {
+//                         for (int c = 0; c < standardModel->columnCount(); ++c) {
+//                             QModelIndex itemIndex = standardModel->index(r, c);
+//                             QStandardItem *item = standardModel->itemFromIndex(itemIndex);
+//                             if (item) {
+//                                 if (r == row) {
+//                                     // 当前行背景色
+//                                     item->setData(QColor(178, 235, 242), Qt::BackgroundRole);
+//                                 } else {
+//                                     // 其他行恢复正常背景色
+//                                     item->setData(QColor(255, 255, 255), Qt::BackgroundRole);
+//                                 }
+//                             }
+//                         }
+//                     }
+//                 }
+//             }
+//         }
+
+//         // 其他事件交给父类处理
+//         return QObject::eventFilter(watched, event);
+//     }
+// };
 
 FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
+    this->path = path;
+    this->resultList = resultList;
 
     QVBoxLayout *mainLayout = new QVBoxLayout();
 
     // 顶部区域的组件
     QWidget *topAreaWidget = new QWidget();
-    topAreaWidget->setStyleSheet("QWidget{background-color:rgb(244, 243, 248);}");
+    topAreaWidget->setObjectName("topAreaWidget");
+    topAreaWidget->setStyleSheet("#topAreaWidget{background-color:rgb(244, 243, 248); border-radius: 8px;} ");
     QHBoxLayout *topAreaLayout = new QHBoxLayout();
     topAreaWidget->setLayout(topAreaLayout);
+
     // 返回按钮
-    QPushButton *backBtn = new QPushButton("<-");
+    QPushButton *backBtn = new QPushButton("返回");
+    backBtn->setMaximumWidth(60);
+    backBtn->setStyleSheet("QPushButton{padding: 3 6 3 6; border: 1px solid rgb(200, 200, 200);border-radius: 4px;} "
+                           "QPushButton:hover{border: 1px solid rgb(100, 150, 242);}");
+    backBtn->setCursor(Qt::PointingHandCursor);
     topAreaLayout->addWidget(backBtn);
     // 返回按钮事件
     QObject::connect(backBtn, &QPushButton::clicked, [=](){
@@ -82,12 +105,65 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
             MyUtils::checkCache(parentPath);
         }
     });
+
     // 地址栏
     QLineEdit *pathInputLine = new QLineEdit(path);
-    pathInputLine->setStyleSheet("QLineEdit{margin:5px 5px 5px 5px;height:20px;}");
+    pathInputLine->setStyleSheet("QLineEdit{"
+                                 "margin:5px 5px 5px 5px; "
+                                 "height:20px; "
+                                 "padding: 1 2 1 2; "
+                                 "border: 1px solid rgb(200,200,200);"
+                                 "border-radius:4px;"
+                                 "} "
+                                 "QLineEdit:focus { border: 1px solid rgb(100, 150, 242);} "
+                                 "QLineEdit:hover { border: 1px solid rgb(100, 150, 242);} "
+                                 "");
     // 地址栏添加回车事件监听
-    pathInputLine->installEventFilter(new PathInputLineListener(pathInputLine));
+    //pathInputLine->installEventFilter(new PathInputLineListener(pathInputLine));
+    PathInputLineListener *listener = new PathInputLineListener(pathInputLine);
+    connect(pathInputLine, &QLineEdit::returnPressed, listener, &PathInputLineListener::editLineSlot);
+
+    // 顶部区域添加地址栏
     topAreaLayout->addWidget(pathInputLine);
+
+    // 确认按钮
+    QPushButton *confirmBtn = new QPushButton("确认");
+    confirmBtn->setMaximumWidth(60);
+    confirmBtn->setStyleSheet("QPushButton{padding: 3 6 3 6; border: 1px solid rgb(200, 200, 200);border-radius: 4px;} "
+                           "QPushButton:hover{border: 1px solid rgb(100, 150, 242);}");
+    confirmBtn->setCursor(Qt::PointingHandCursor);
+    // 绑定事件
+    connect(confirmBtn, &QPushButton::clicked, listener, &PathInputLineListener::editLineSlot);
+    topAreaLayout->addWidget(confirmBtn);
+
+    // 刷新按钮
+    QPushButton *refreshBtn = new QPushButton("刷新");
+    refreshBtn->setMaximumWidth(60);
+    refreshBtn->setStyleSheet("QPushButton{padding: 3 6 3 6; border: 1px solid rgb(200, 200, 200);border-radius: 4px;} "
+                              "QPushButton:hover{border: 1px solid rgb(100, 150, 242);}");
+    refreshBtn->setCursor(Qt::PointingHandCursor);
+    // 刷新按钮事件
+    QObject::connect(refreshBtn, &QPushButton::clicked, [=](){
+        // 主窗口切换进入分析界面
+        getMainWindow()->setCentralWidget(new AnalysisWidget(path));
+    });
+    topAreaLayout->addWidget(refreshBtn);
+
+    // 跳转到资源管理器按钮
+    QPushButton *explorerBtn = new QPushButton("在资源管理器打开");
+    explorerBtn->setMaximumWidth(200);
+    explorerBtn->setStyleSheet("QPushButton{padding: 3 6 3 6; border: 1px solid rgb(200, 200, 200);border-radius: 4px;} "
+                              "QPushButton:hover{border: 1px solid rgb(100, 150, 242);}");
+    explorerBtn->setCursor(Qt::PointingHandCursor);
+    // 跳转到资源管理器按钮事件
+    QObject::connect(explorerBtn, &QPushButton::clicked, [=](){
+        std::string command = "explorer \"" + path.toStdString() + "\"";  // 使用双引号包裹路径，处理空格
+        // 使用 QProcess 执行命令
+        QProcess::startDetached(command.data());
+    });
+    topAreaLayout->addWidget(explorerBtn);
+
+
 
     // 下方内容区域
     QScrollArea *bottomArea = new QScrollArea();
@@ -107,74 +183,136 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
             height: 0px;
         }
     )");
-    // 下方widget
-    QWidget *bottomAreaWidget = new QWidget();
 
-    // 下方widget的布局
-    QGridLayout *bottomLayout = new QGridLayout();
-    bottomLayout->setSpacing(0);
-    bottomAreaWidget->setLayout(bottomLayout);
+    // 创建一个 QTableView
+    QTableView *tableView = new QTableView(this);
 
-    // 固定网格布局的列数
-    const int fixedColNum = 4;
-    // 标题栏
-    QLabel *nameT = new QLabel("名称");
-    nameT->setMinimumWidth(200);
-    nameT->setContentsMargins(10,0,0,0);
-    QLabel *updateDateT = new QLabel("修改日期");
-    updateDateT->setMinimumWidth(150);
-    QLabel *typeT = new QLabel("类型");
-    typeT->setMinimumWidth(80);
-    QLabel *sizeT = new QLabel("大小");
-    sizeT->setMinimumWidth(80);
-    bottomLayout->addWidget(nameT, 0, 0);
-    bottomLayout->addWidget(updateDateT, 0, 1);
-    bottomLayout->addWidget(typeT, 0, 2);
-    bottomLayout->addWidget(sizeT, 0, 3);
+    // 创建一个 QStandardItemModel 来存储文件信息
+    QStandardItemModel *model = new QStandardItemModel();
+    model->setHorizontalHeaderLabels({"", "文件名", "更新时间", "类型", "大小"});
 
-    int i = 1;
+    // 将文件信息填充到 model 中
     for (FileInfo *fileInfo : resultList) {
-        QWidget *nameWidget = new QWidget();
-        QHBoxLayout *nameLayout = new QHBoxLayout();
+        QList<QStandardItem *> rowItems;
 
-        nameLayout->setAlignment(Qt::AlignLeft);
-        nameLayout->setContentsMargins(0,2,0,2);
-        nameWidget->setLayout(nameLayout);
-
-        QLabel *icon = new QLabel();
-        if(fileInfo->isDir){
-            icon->setPixmap(QPixmap(":/res/static/folder.png"));
-            icon->resize(25, 25);
-        }else{
-            icon->setPixmap(QPixmap(":/res/static/file.png"));
-            icon->resize(26,28);
+        // 创建文件图标列
+        QStandardItem *iconItem = new QStandardItem();
+        if (fileInfo->isDir) {
+            iconItem->setIcon(QIcon(":/res/static/folder.png"));
+        } else {
+            iconItem->setIcon(QIcon(":/res/static/file.png"));
         }
-        QLabel *name = new QLabel(fileInfo->fileName);
-        nameLayout->addWidget(icon);
-        nameLayout->addWidget(name);
+        iconItem->setData(QVariant::fromValue(fileInfo->fileName));
 
-        QLabel *updateDate = new QLabel(fileInfo->updateTime);
-        QLabel *type = new QLabel(fileInfo->isDir ? "文件夹" : "文件");
-        QLabel *size = new QLabel(QString::fromStdString(MyUtils::formatSize(fileInfo->size)));
+        // 创建文件名列
+        QStandardItem *fileNameItem = new QStandardItem(fileInfo->fileName);
+        fileNameItem->setEditable(false);
+        fileNameItem->setToolTip(fileInfo->fileName);
 
-        bottomLayout->addWidget(nameWidget, i, 0);
-        bottomLayout->addWidget(updateDate, i, 1);
-        bottomLayout->addWidget(type, i, 2);
-        bottomLayout->addWidget(size, i, 3);
+        // 创建更新时间列
+        QStandardItem *updateDateItem = new QStandardItem(fileInfo->updateTime);
+        updateDateItem->setEditable(false);
 
-        // 设置监听器
-        nameWidget->setObjectName(fileInfo->filePath);
-        nameWidget->installEventFilter(new FolderMouseEventListener(nameWidget, updateDate, type, size));
-        updateDate->installEventFilter(new FolderMouseEventListener(nameWidget, updateDate, type, size));
-        type->installEventFilter(new FolderMouseEventListener(nameWidget, updateDate, type, size));
-        size->installEventFilter(new FolderMouseEventListener(nameWidget, updateDate, type, size));
+        // 创建类型列（文件或文件夹）
+        QStandardItem *typeItem = new QStandardItem(fileInfo->isDir ? "文件夹" : "文件");
+        typeItem->setEditable(false);
 
-        i++;
+        // 创建大小列
+        QStandardItem *sizeItem = new QStandardItem(QString::fromStdString(MyUtils::formatSize(fileInfo->size)));
+        sizeItem->setEditable(false);
+
+        // 将各列添加到模型中
+        rowItems.append(iconItem);
+        rowItems.append(fileNameItem);
+        rowItems.append(updateDateItem);
+        rowItems.append(typeItem);
+        rowItems.append(sizeItem);
+
+        // 将当前行添加到 model 中
+        model->appendRow(rowItems);
     }
-    bottomArea->setWidget(bottomAreaWidget);
+
+    // 将 model 设置到 listView
+    tableView->setModel(model);
+
+    // 设置列表的属性
+    tableView->setIconSize(QSize(25, 25));  // 设置图标大小
+    //tableView->horizontalHeader()->setStretchLastSection(true); // 自动拉伸最后一列
+    tableView->verticalHeader()->hide();  // 隐藏竖向头部
+    tableView->setAlternatingRowColors(true);  // 设置交替行颜色
+    tableView->resizeColumnsToContents();// 自动调整所有列的宽度
+    tableView->setShowGrid(false);  // 显示网格线
+    tableView->setColumnWidth(1, 200);
+    tableView->setColumnWidth(2, 150);
+    tableView->setColumnWidth(3, 80);
+    tableView->setColumnWidth(4, 80);
+    tableView->setSelectionBehavior(QAbstractItemView::SelectRows);// 点击时选择一整行
+    tableView->setFocusPolicy(Qt::NoFocus);// 设置 QTableView 的焦点策略
+    tableView->setMouseTracking(true);// 启用鼠标追踪
+    tableView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
+    tableView->horizontalHeader()->setStyleSheet("QHeaderView::section {"
+                                                 "   border: none;"  // 去掉表头的边框
+                                                 "}");
+
+    tableView->setStyleSheet("QTableView{"
+                             "}"
+                             "QTableView::item:hover {"
+                             "    background-color: rgb(229, 243, 255);"  // Hover 时的背景色
+                             "    color: #000000;"             // Hover 时的文本颜色
+                             "}"
+                             "QTableView::item:selected {"
+                             "    background-color: rgb(204, 232, 255);"  // 选中时的背景色
+                             "    color: #000000;"             // 选中时的文本颜色
+                             "}"
+                             "QTableView::item:focus {"
+                             "    border: none;"  // 取消点击后的边框
+                             "    outline: none;"
+                             "}"
+                             "QTableView QScrollBar:vertical, QTableView QScrollBar:horizontal {"
+                             "    background: rgba(0, 0, 0, 0);"
+                             "    border-radius: 3px;"   // 圆角滚动条背景
+                             "    width: 6px;"          // 垂直滚动条宽度
+                             "    height: 6px;"         // 水平滚动条高度
+                             "}"
+                             "QTableView QScrollBar::handle:vertical, QTableView QScrollBar::handle:horizontal {"
+                             "    background: rgba(0, 0, 0, 30%);"   // 半透明滑块
+                             "    border-radius: 3px;"                 // 圆角滑块
+                             "    min-height: 15px;"                   // 滑块最小高度
+                             "    min-width: 15px;"                    // 滑块最小宽度
+                             "}"
+                             "QTableView QScrollBar::handle:vertical:hover, QTableView QScrollBar::handle:horizontal:hover {"
+                             "    background: rgba(0, 0, 0, 50%);"   // 悬停时的滑块颜色
+                             "}"
+                             "QTableView QScrollBar::add-line:vertical, QTableView QScrollBar::sub-line:vertical, "
+                             "QTableView QScrollBar::add-line:horizontal, QTableView QScrollBar::sub-line:horizontal {"
+                             "    border: none;"  // 隐藏箭头按钮
+                             "    background: none;"  // 不显示箭头按钮背景
+                             "}"
+                             "QTableView QScrollBar::add-page:vertical, QTableView QScrollBar::sub-page:vertical, "
+                             "QTableView QScrollBar::add-page:horizontal, QTableView QScrollBar::sub-page:horizontal {"
+                             "    background: none;"  // 隐藏滚动条区域的背景
+                             "}");
+
+    //tableView->installEventFilter(new FolderMouseEventListener(tableView));
+
+    connect(tableView, &QTableView::doubleClicked, this, &FolderWidget::onRowClicked);
 
     mainLayout->addWidget(topAreaWidget);
-    mainLayout->addWidget(bottomArea);
+    //mainLayout->addWidget(bottomArea);
+    mainLayout->addWidget(tableView);
     mainLayout->setAlignment(Qt::AlignTop);
     this->setLayout(mainLayout);
+}
+
+void FolderWidget::onRowClicked(const QModelIndex &index){
+    // 获取点击的行号
+    int row = index.row();
+
+    qDebug("点击的行号: %d", row);
+
+    if(resultList[row]->isDir){
+        // 检查缓存
+        MyUtils::checkCache(resultList[row]->filePath);
+    }
+
 }

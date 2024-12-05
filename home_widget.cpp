@@ -1,10 +1,8 @@
 #include "home_widget.h"
 #include "utils.h"
 #include "pathinputlinelistener.h"
-#include "globalvariable.h"
 
-// 引入全局变量,主窗口
-//extern QMainWindow *mainWin;
+QString currentClickStorage;
 
 /**
  * @brief The MouseEventListener class
@@ -14,19 +12,34 @@ class HomeMouseEventListener : public QObject{
 private:
     // 监听的目标组件
     QWidget *itemWidget;
+    // 所有磁盘的QWidget组件列表
+    QList<QWidget *> storageWidgetList;
 public:
-    HomeMouseEventListener(QWidget *widget){
+    HomeMouseEventListener(QWidget *widget, QList<QWidget *> storageWidgetList){
         this->itemWidget = widget;
+        this->storageWidgetList = storageWidgetList;
     }
 
     bool eventFilter(QObject *watched, QEvent *event) override{
-        if (event->type() == QEvent::Enter) {
+        if(event->type() == QEvent::MouseButtonPress){
+            currentClickStorage = itemWidget->objectName();
+            itemWidget->setStyleSheet("QWidget{background-color:rgb(204, 232, 255);}");
+
+            for (int i = 0; i < storageWidgetList.size(); ++i) {
+                QWidget *widget = storageWidgetList.at(i);
+                if(widget->objectName() != itemWidget->objectName()){
+                    widget->setStyleSheet("QWidget{background-color:rgba(255, 255, 255, 0);}");
+                }
+            }
+        }
+        else if (event->type() == QEvent::Enter) {
             itemWidget->setStyleSheet("QWidget{background-color:rgb(217, 238, 255);}");
+            //itemWidget->setCursor(Qt::PointingHandCursor);
             return true;
-        }else if(event->type() == QEvent::Leave){
+        }else if(event->type() == QEvent::Leave && currentClickStorage != itemWidget->objectName()){
             itemWidget->setStyleSheet("QWidget{background-color:rgba(255, 255, 255, 0);}");
             return true;
-        }else if(event->type() == QEvent::MouseButtonPress){
+        }else if(event->type() == QEvent::MouseButtonDblClick){
             QString path = itemWidget->objectName();
             // 检查缓存,如果有缓存就直接进入结果页面
             MyUtils::checkCache(path);
@@ -38,6 +51,7 @@ public:
     }
 };
 
+HomeWidget::~HomeWidget(){}
 
 HomeWidget::HomeWidget(){
     // 主界面布局
@@ -54,9 +68,20 @@ HomeWidget::HomeWidget(){
     // 地址栏
     QLineEdit *pathInputLine = new QLineEdit("");
     pathInputLine->setPlaceholderText("输入目录路径, 回车确认");
-    pathInputLine->setStyleSheet("QLineEdit{margin:0px 30px 5px 30px;height:25px;}");
+    pathInputLine->setStyleSheet("QLineEdit{"
+                                 "margin:0px 30px 5px 30px; "
+                                 "height:25px; "
+                                 "padding-left:5px; "
+                                 "border-radius: 4px;"
+                                 "border: 1px solid rgb(200, 200, 200);"
+                                 "} "
+                                 "QLineEdit:focus {border: 1px solid rgb(100, 150, 242);} "
+                                 "QLineEdit:hover{border: 1px solid rgb(100, 150, 242);} ");
+
     // 地址栏添加回车事件监听
-    pathInputLine->installEventFilter(new PathInputLineListener(pathInputLine));
+    PathInputLineListener *listener = new PathInputLineListener(pathInputLine);
+    connect(pathInputLine, &QLineEdit::returnPressed, listener, &PathInputLineListener::editLineSlot);
+
     contentLayout->addWidget(pathInputLine, 0, 0, 1, 3);
 
     // 获取电脑磁盘信息
@@ -65,6 +90,8 @@ HomeWidget::HomeWidget(){
     //QList<QStorageInfo> *storageInfoListP = &storageInfoList;
     //storageInfoListP->append(storageInfoList);
 
+    QList<QWidget *> storageWidgetList;
+
     // 循环生成磁盘信息组件,添加到主布局
     int i = 4;
     for(const QStorageInfo storage : storageInfoList){
@@ -72,6 +99,7 @@ HomeWidget::HomeWidget(){
 
             // 磁盘信息容器
             QWidget *itemWidget = new QWidget();
+
             // 设置组件名称,名称为磁盘根路径
             itemWidget->setObjectName(storage.rootPath());
 
@@ -116,14 +144,19 @@ HomeWidget::HomeWidget(){
             // 水平布局添加右侧子容器
             innerLayout->addWidget(innerRightWidget);
 
-            // 磁盘信息容器添加鼠标进入监听
-            itemWidget->installEventFilter(new HomeMouseEventListener(itemWidget));
-
-            // 添加磁盘信息容器到主布局(计算当前组件在网格中的位置)
-            contentLayout->addWidget(itemWidget, i/fixedColNum, i%fixedColNum);
-
-            i++;
+            // 组件添加到列表
+            storageWidgetList.append(itemWidget);
         }
+    }
+
+    for(auto item : storageWidgetList){
+        // 磁盘信息容器添加鼠标进入监听
+        item->installEventFilter(new HomeMouseEventListener(item, storageWidgetList));
+
+        // 添加磁盘信息容器到主布局(计算当前组件在网格中的位置)
+        contentLayout->addWidget(item, i/fixedColNum, i%fixedColNum);
+
+        i++;
     }
 
 
