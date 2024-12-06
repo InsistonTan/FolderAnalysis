@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include "fileinfo.h"
 
 #include <QApplication>
 #include <QMainWindow>
@@ -17,8 +16,8 @@ int main(int argc, char *argv[])
     MainWidget w;
 
     w.setFocusPolicy(Qt::ClickFocus);
-    w.setWindowTitle("FolderAnalysis");
-    w.setWindowIcon(QIcon(":/res/static/folder.png"));
+    w.setWindowTitle("FolderAnalysis v1.0.0");
+    w.setWindowIcon(QIcon(":/res/static/icon.png"));
     w.show();
 
     //mainWin = &w;

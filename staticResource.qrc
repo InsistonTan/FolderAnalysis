@@ -4,5 +4,7 @@
         <file>static/disk-icon.png</file>
         <file>static/file.png</file>
         <file>static/folder.png</file>
+        <file>static/icon.png</file>
+        <file>static/shoukuanma.jpg</file>
     </qresource>
 </RCC>

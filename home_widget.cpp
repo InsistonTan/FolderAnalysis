@@ -1,6 +1,7 @@
 #include "home_widget.h"
 #include "utils.h"
 #include "pathinputlinelistener.h"
+#include<QPushButton>
 
 QString currentClickStorage;
 
@@ -32,7 +33,7 @@ public:
                 }
             }
         }
-        else if (event->type() == QEvent::Enter) {
+        else if (event->type() == QEvent::Enter && currentClickStorage != itemWidget->objectName()) {
             itemWidget->setStyleSheet("QWidget{background-color:rgb(217, 238, 255);}");
             //itemWidget->setCursor(Qt::PointingHandCursor);
             return true;
@@ -54,6 +55,8 @@ public:
 HomeWidget::~HomeWidget(){}
 
 HomeWidget::HomeWidget(){
+    currentClickStorage = "";
+
     // 主界面布局
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
 
@@ -160,12 +163,48 @@ HomeWidget::HomeWidget(){
     }
 
 
-    QLabel *about = new QLabel("designed by Insistontan | v0.0.1");
+    QLabel *about = new QLabel("<a href=\"https://github.com/InsistonTan/FolderAnalysis\">项目地址: InsistonTan/FolderAnalysis</a>");
+    about->setOpenExternalLinks(true);
     about->setAlignment(Qt::AlignHCenter);
+
+    QPushButton *donate = new QPushButton("支持作者");
+    donate->setMaximumWidth(100);
+
+    connect(donate, &QPushButton::clicked, [=]{
+        QMainWindow *window = new QMainWindow();
+        window->setWindowTitle("请作者喝杯奶茶, 感谢您的支持和鼓励");
+        window->setFixedSize(400, 300);
+
+        // 创建一个 QLabel 来显示图片
+        QLabel* label = new QLabel();
+        QPixmap pixmap(":/res/static/shoukuanma.jpg");  // 替换为你的图片路径
+        pixmap = pixmap.scaled(400, 300, Qt::KeepAspectRatio);
+        label->setPixmap(pixmap);
+        label->setAlignment(Qt::AlignCenter);  // 设置图片居中显示
+
+        // 创建一个 QWidget 作为主窗口的中央部件
+        QWidget* centralWidget = new QWidget();
+
+        // 创建一个 QVBoxLayout 布局管理器
+        QVBoxLayout* layout = new QVBoxLayout(centralWidget);
+
+        // 将 QLabel 添加到布局中
+        layout->addWidget(label);
+
+        // 设置布局为中央部件的布局
+        centralWidget->setLayout(layout);
+
+        // 设置中央部件
+        window->setCentralWidget(centralWidget);
+
+        window->show();
+    });
 
     mainLayout->addWidget(contentWidget, Qt::AlignTop);
     mainLayout->addStretch();
     mainLayout->addWidget(about);
+    mainLayout->addWidget(donate, 0, Qt::AlignCenter);
+
 
     // 添加主布局到主界面
     this->setLayout(mainLayout);

@@ -26,7 +26,8 @@ MainWidget::MainWidget(QMainWindow *parent)
 
     // 设置最大线程数为cpu核心线程数减一
     int coreThreadSize = std::thread::hardware_concurrency();
-    qDebug("cpu逻辑核心数: %d", coreThreadSize);
+
+    // qDebug("cpu逻辑核心数: %d", coreThreadSize);
 
     getThreadPool()->setMaxThreadCount(coreThreadSize > 6 ?  coreThreadSize - 1 : 6);
 
