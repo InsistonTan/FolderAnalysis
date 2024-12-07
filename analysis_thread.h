@@ -34,6 +34,7 @@ signals:
     void changeWidgetSignal(QString path, QList<FileInfo *> resultList);
 
 private:
+    QMutex handlingDirSetMutex;
     // 正在处理的文件夹
     QSet<QString> handlingDirSet;
 
@@ -58,14 +59,22 @@ public slots:
 
                 // 已扫描文件夹数加一
                 handledNum++;
+
+                // 获得锁
+                handlingDirSetMutex.lock();
                 // 移除已经扫描完成的文件夹
                 handlingDirSet.remove(fileName);
                 // 显示新的正在扫描的文件夹
                 if(!handlingDirSet.empty()){
                     QSet<QString>::const_iterator it = handlingDirSet.constBegin();
-                    // 触发更新label的信号
-                    emit updateLabelSignal("正在扫描文件夹:" + *it);
+
+                    if(!it->isNull() && !it->isEmpty()){
+                        // 触发更新label的信号
+                        emit updateLabelSignal("正在扫描文件夹:" + *it);
+                    }
                 }
+                // 释放锁
+                handlingDirSetMutex.unlock();
 
                 // 触发更新进度条信号
                 emit updateProgressSignal((handledNum/(double)totalDirNum)*100 - 1);
@@ -114,8 +123,12 @@ public:
                              );
 
             if(file.isDir()){
+                // 获得锁
+                handlingDirSetMutex.lock();
                 // 添加到正在处理的文件夹set
                 handlingDirSet.insert(file.fileName());
+                // 释放锁
+                handlingDirSetMutex.unlock();
 
                 // 添加当前文件夹到文件夹子任务数量map
                 insertToDirSubTaskNumMap(file.fileName(), 0);
