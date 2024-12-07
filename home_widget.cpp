@@ -104,7 +104,7 @@ HomeWidget::HomeWidget(){
             QWidget *itemWidget = new QWidget();
 
             // 设置组件名称,名称为磁盘根路径
-            itemWidget->setObjectName(storage.rootPath());
+            itemWidget->setObjectName(storage.rootPath().replace("\\", "/").toUpper());
 
             // 给磁盘信息容器使用的水平布局
             QHBoxLayout *innerLayout = new QHBoxLayout();

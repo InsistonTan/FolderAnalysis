@@ -116,7 +116,7 @@ public:
 
             insertToTempResultMap(file.fileName(), new FileInfo(
                                                   file.fileName(),
-                                                  file.absoluteFilePath() + (file.isDir() ? "/" : ""),
+                                                  file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
                                                   file.size(),
                                                   file.isDir(),
                                                   file.lastModified().toString("yyyy-MM-dd hh:mm"))

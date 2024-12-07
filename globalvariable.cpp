@@ -18,6 +18,15 @@ QMutex mutex;
 QMap<QString, long> dirSubTaskNumMap;
 QMutex mutex2;
 
+// 记录有过删除操作的目录和上一级目录(因为文件被删除, 需要对本目录和上一级目录重新扫描)
+// QSet<QString> needRefreshDirSet;
+// void addToNeedRefreshDirSet(QString dirPath){
+//     needRefreshDirSet.insert(dirPath);
+// }
+// bool isCurrentDirInNeedRefreshDirSet(QString dirPath){
+//     return needRefreshDirSet.contains(dirPath);
+// }
+
 QMap<QString, long>* getDirSubTaskNumMap(){
     return &dirSubTaskNumMap;
 }
@@ -82,3 +91,11 @@ QMap<QString, QList<FileInfo *>> getResultCache(){
 void insertToResultMap(QString key, QList<FileInfo *> value){
     result_cache.insert(key, value);
 }
+void updateResultCache(QString key, QList<FileInfo *> value){
+    result_cache[key] = value;
+}
+QList<FileInfo *> getValueFromCache(QString key){
+    return result_cache[key];
+}
+
+

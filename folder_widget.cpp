@@ -10,63 +10,10 @@
 #include <QStandardItem>
 #include <QHeaderView>
 #include <QMouseEvent>
-
-// 引入全局变量,主窗口
-//extern QMainWindow *mainWin;
-
-// 文件夹监听器
-// 事件过滤器类，继承 QObject
-// class FolderMouseEventListener : public QObject {
-// private:
-//     QTableView *tableView;
-// public:
-//     FolderMouseEventListener(QTableView *tableView){
-//         this->tableView = tableView;
-//         // 启用鼠标追踪
-//         this->tableView->setMouseTracking(true);
-//     }
-
-//     // 重写 eventFilter 来处理事件
-//     bool eventFilter(QObject *watched, QEvent *event) override {
-//         qDebug("eventType: %d", event->type());
-//         if (event->type() == QEvent::MouseMove) {
-//             qDebug("mouse move");
-
-//             // 处理鼠标悬停效果
-//             QMouseEvent *mouseEvent = static_cast<QMouseEvent *>(event);
-//             QModelIndex index = tableView->indexAt(mouseEvent->pos());
-
-//             if (index.isValid()) {
-//                 int row = index.row();
-
-//                 qDebug() << "Mouse hovering over row:" << row;
-
-//                 // 获取模型并设置行背景颜色
-//                 QStandardItemModel *standardModel = qobject_cast<QStandardItemModel *>(tableView->model());
-//                 if (standardModel) {
-//                     for (int r = 0; r < standardModel->rowCount(); ++r) {
-//                         for (int c = 0; c < standardModel->columnCount(); ++c) {
-//                             QModelIndex itemIndex = standardModel->index(r, c);
-//                             QStandardItem *item = standardModel->itemFromIndex(itemIndex);
-//                             if (item) {
-//                                 if (r == row) {
-//                                     // 当前行背景色
-//                                     item->setData(QColor(178, 235, 242), Qt::BackgroundRole);
-//                                 } else {
-//                                     // 其他行恢复正常背景色
-//                                     item->setData(QColor(255, 255, 255), Qt::BackgroundRole);
-//                                 }
-//                             }
-//                         }
-//                     }
-//                 }
-//             }
-//         }
-
-//         // 其他事件交给父类处理
-//         return QObject::eventFilter(watched, event);
-//     }
-// };
+#include <QMenu>
+#include <QAction>
+#include <QMessageBox>
+#include "custom_table_view.h"
 
 FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
     this->path = path;
@@ -185,7 +132,8 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
     )");
 
     // 创建一个 QTableView
-    QTableView *tableView = new QTableView(this);
+    //QTableView *tableView = new QTableView(this);
+    CustomTableView *tableView = new CustomTableView(resultList);
 
     // 创建一个 QStandardItemModel 来存储文件信息
     QStandardItemModel *model = new QStandardItemModel();
@@ -293,7 +241,9 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
                              "    background: none;"  // 隐藏滚动条区域的背景
                              "}");
 
-    //tableView->installEventFilter(new FolderMouseEventListener(tableView));
+    // 右键菜单
+
+
 
     connect(tableView, &QTableView::doubleClicked, this, &FolderWidget::onRowClicked);
 

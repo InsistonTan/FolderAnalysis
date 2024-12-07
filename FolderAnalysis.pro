@@ -24,6 +24,7 @@ HEADERS += \
     analysis_thread.h \
     analysis_widget.h \
     analysis_worker.h \
+    custom_table_view.h \
     fileinfo.h \
     folder_widget.h \
     globalvariable.h \

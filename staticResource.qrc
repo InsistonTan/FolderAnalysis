@@ -6,5 +6,6 @@
         <file>static/folder.png</file>
         <file>static/icon.png</file>
         <file>static/shoukuanma.jpg</file>
+        <file>static/icon_delete.png</file>
     </qresource>
 </RCC>

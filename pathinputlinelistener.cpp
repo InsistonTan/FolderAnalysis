@@ -10,6 +10,12 @@ PathInputLineListener::PathInputLineListener(QLineEdit *watchedItem) {
 
 void PathInputLineListener::editLineSlot(){
     QString path = watchedItem->text().replace("\\", "/");
+
+    QStringList strList = path.split(":");
+    if(strList.size() == 2){
+        path = strList[0].toUpper() + ":" + strList[1];
+    }
+
     // 如果地址不以 "/" 结尾,手动加上
     if(!path.endsWith("/")){
         path += "/";
