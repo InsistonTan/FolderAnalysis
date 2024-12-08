@@ -232,10 +232,20 @@ private slots:
                     return;
                 }
 
-                // 倒序删除界面上的选中的行(因为删除时行号会变化, 倒着删除可以保证前面的行号不变)
-                for (int i = selectedIndexes.size() - 1; i >= 0; i--) {
-                    int row = selectedIndexes[i].row();
+                // 将行号倒序
+                QList<int> rowIndexList;
+                for(auto item : selectedIndexes){
+                    rowIndexList.append(item.row());
+                }
+                // 重新排序
+                std::sort(rowIndexList.begin(), rowIndexList.end(), [](int f1, int f2){
+                    return f1 > f2;
+                });
 
+
+
+                // 倒序删除界面上的选中的行(因为删除时行号会变化, 倒着删除可以保证前面的行号不变)
+                for (int row : rowIndexList) {
                     if(isCurrentRowFileInList(successDeleteFileList, row)){
                         this->model()->removeRow(row);  // 界面上删除该行
 
