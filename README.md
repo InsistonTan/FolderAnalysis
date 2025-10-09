@@ -1,13 +1,26 @@
 # FolderAnalysis
-文件夹分析工具, 能够便捷地查看文件夹总大小(This program is used to help users clearly and intuitively see the total size of folders on disk.)
+## 简介
+本项目基于QT框架(QT6.x)开发, 实现磁盘占用分析, 通过扫描磁盘上的文件夹, 根据文件夹的总大小进行排序展示
 
-基于QT开发(base on QT)
+---
+
+## 怎么编译本项目
+### 依赖
+- QT6.x [QT官网](https://www.qt.io/)
+- 开发工具 QT Creator 或者其它
+### 编译
+- clone或下载本项目源码
+- QT Creator打开本项目的 FolderAnalysis.pro 文件
+- 执行qmake
+- 编译运行
+
+## 已实现的功能
+- 使用多线程扫描磁盘上的文件夹, 按照文件夹的总大小由大到小进行排序
+- 支持当前路径跳转到系统资源管理器
+- 支持文件多选批量删除
 
 
-![image](https://github.com/user-attachments/assets/a03ff5eb-f4b9-4124-b69c-431dacd7905c)
+---
 
-
-![image](https://github.com/user-attachments/assets/151246a6-e985-4783-9d31-0c8bf549601a)
-
-
-![image](https://github.com/user-attachments/assets/ba9cce4f-2890-4730-bdee-5f02c5508fad)
+## License
+This project is licensed under the [MIT License](LICENSE).
