@@ -19,6 +19,8 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
     this->path = path;
     this->resultList = resultList;
 
+    folderUrl = path;
+
     QVBoxLayout *mainLayout = new QVBoxLayout();
 
     // 顶部区域的组件
