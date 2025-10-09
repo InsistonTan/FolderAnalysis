@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     MainWidget w;
 
     w.setFocusPolicy(Qt::ClickFocus);
-    w.setWindowTitle("FolderAnalysis v1.0.1");
+    w.setWindowTitle("FolderAnalysis v1.0.2");
     w.setWindowIcon(QIcon(":/res/static/icon.png"));
     w.show();
 

@@ -21,6 +21,7 @@ void AnalysisWidget::updateLabel2(QString text){
 // 切换主窗口widget到文件夹详情页面的槽函数
 void AnalysisWidget::changeToFolderWidget(QString path, QList<FileInfo *> resultList){
     getMainWindow()->setCentralWidget(new FolderWidget(path, resultList));
+    currentPageName = PAGE_FOLDER;
 }
 
 // 构造函数

@@ -8,6 +8,8 @@
 #include "home_widget.h"
 #include "globalvariable.h"
 #include <QMenuBar>
+#include <QGuiApplication>
+#include <QStyleHints>
 
 using namespace std;
 
@@ -22,7 +24,29 @@ MainWidget::MainWidget(QMainWindow *parent)
 {
     ui->setupUi(this);
 
-    this->setStyleSheet("QWidget { background-color:white; }");
+    // 适配深色模式
+    if(QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark){
+        this->setStyleSheet("QWidget { background-color:black; }");
+        setIsSystemDarkMode(true);
+    }else{
+        this->setStyleSheet("QWidget { background-color:white; }");
+        setIsSystemDarkMode(false);
+    }
+    // 监听系统模式切换
+    connect(QGuiApplication::styleHints(), &QStyleHints::colorSchemeChanged,
+            this, [=](Qt::ColorScheme newColorScheme){
+        if (newColorScheme == Qt::ColorScheme::Dark){
+            this->setStyleSheet("QWidget { background-color:black; }");
+            setIsSystemDarkMode(true);
+        }else{
+            this->setStyleSheet("QWidget { background-color:white; }");
+            setIsSystemDarkMode(false);
+        }
+
+        // 重绘界面
+        repaintCentralWidget();
+    });
+
 
     // 设置最大线程数为cpu核心线程数减一
     int coreThreadSize = std::thread::hardware_concurrency();
@@ -36,6 +60,7 @@ MainWidget::MainWidget(QMainWindow *parent)
 
     // 设置中心组件
     this->setCentralWidget(centralWidget);
+    currentPageName = PAGE_HOME;
 
     // this为主窗口
     //mainWindow = this;

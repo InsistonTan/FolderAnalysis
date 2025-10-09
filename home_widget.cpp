@@ -2,6 +2,7 @@
 #include "utils.h"
 #include "pathinputlinelistener.h"
 #include<QPushButton>
+#include "globalvariable.h"
 
 QString currentClickStorage;
 
@@ -24,7 +25,11 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override{
         if(event->type() == QEvent::MouseButtonPress){
             currentClickStorage = itemWidget->objectName();
-            itemWidget->setStyleSheet("QWidget{background-color:rgb(204, 232, 255);}");
+            if(getIsSystemDarkMode()){
+                itemWidget->setStyleSheet("QWidget{background-color:rgb(80, 80, 80);}");
+            }else{
+                itemWidget->setStyleSheet("QWidget{background-color:rgb(204, 232, 255);}");
+            }
 
             for (int i = 0; i < storageWidgetList.size(); ++i) {
                 QWidget *widget = storageWidgetList.at(i);
@@ -34,7 +39,12 @@ public:
             }
         }
         else if (event->type() == QEvent::Enter && currentClickStorage != itemWidget->objectName()) {
-            itemWidget->setStyleSheet("QWidget{background-color:rgb(217, 238, 255);}");
+            if(getIsSystemDarkMode()){
+                itemWidget->setStyleSheet("QWidget{background-color:rgb(77, 77, 77);}");
+            }else{
+                itemWidget->setStyleSheet("QWidget{background-color:rgb(217, 238, 255);}");
+            }
+
             //itemWidget->setCursor(Qt::PointingHandCursor);
             return true;
         }else if(event->type() == QEvent::Leave && currentClickStorage != itemWidget->objectName()){
@@ -42,6 +52,9 @@ public:
             return true;
         }else if(event->type() == QEvent::MouseButtonDblClick){
             QString path = itemWidget->objectName();
+
+            folderUrl = path;
+
             // 检查缓存,如果有缓存就直接进入结果页面
             MyUtils::checkCache(path);
 

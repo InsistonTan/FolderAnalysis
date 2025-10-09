@@ -22,6 +22,7 @@ void MyUtils::checkCache(QString path){
     if(!cacheList.empty()){
         // 直接进入结果页面
         getMainWindow()->setCentralWidget(new FolderWidget(path, cacheList));
+        currentPageName = PAGE_FOLDER;
     }else{
         // 主窗口切换进入分析界面
         getMainWindow()->setCentralWidget(new AnalysisWidget(path));

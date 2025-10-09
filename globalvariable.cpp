@@ -1,4 +1,6 @@
 #include "globalvariable.h"
+#include "home_widget.h"
+#include "utils.h"
 
 // 全局变量,缓存文件夹扫描的结果
 QMap<QString, QList<FileInfo *>> result_cache;
@@ -12,7 +14,7 @@ QThreadPool *threadPool = QThreadPool::globalInstance();
 // 存储临时结果map
 QMap<QString, FileInfo*> resultMap;
 // 互斥锁
-QMutex mutex;
+QMutex muteX;
 
 // 记录文件夹所拥有的子任务数
 QMap<QString, long> dirSubTaskNumMap;
@@ -57,7 +59,7 @@ void minusOneTaskToDirSubTaskNumMap(QString dir){
 
 void addSizeToMap(QString dir, long long size){
     // QMutexLocker自动管理mutex互斥锁
-    QMutexLocker locker(&mutex);
+    QMutexLocker locker(&muteX);
 
     // 汇总结果
     resultMap.value(dir)->size += size;
@@ -69,7 +71,7 @@ QMap<QString, FileInfo*>* getResultMap(){
 
 void insertToTempResultMap(QString filename, FileInfo* fileInfo){
     // QMutexLocker自动管理mutex互斥锁
-    QMutexLocker locker(&mutex);
+    QMutexLocker locker(&muteX);
     resultMap.insert(filename, fileInfo);
 }
 
@@ -98,4 +100,23 @@ QList<FileInfo *> getValueFromCache(QString key){
     return result_cache[key];
 }
 
+bool isDarkMode = false;
+bool getIsSystemDarkMode(){
+    return isDarkMode;
+}
+void setIsSystemDarkMode(bool val){
+    isDarkMode = val;
+}
+
+QString currentPageName = "";
+QString folderUrl = "";
+
+// 重新绘制中心组件
+void repaintCentralWidget(){
+    if(currentPageName == PAGE_HOME){
+        mainWin->setCentralWidget(new HomeWidget());
+    }else if(currentPageName == PAGE_FOLDER){
+        MyUtils::checkCache(folderUrl);
+    }
+}
 

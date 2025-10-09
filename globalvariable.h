@@ -8,6 +8,9 @@
 #include<QThreadPool>
 #include<QMutex>
 
+#define PAGE_HOME "homePage"
+#define PAGE_FOLDER "folderPage"
+
 // 全局变量,缓存文件夹扫描的结果
 extern QMap<QString, QList<FileInfo *>> result_cache;
 QMap<QString, QList<FileInfo *>> getResultCache();
@@ -43,5 +46,18 @@ void minusOneTaskToDirSubTaskNumMap(QString dir);
 // extern QSet<QString> needRefreshDirSet;
 // void addToNeedRefreshDirSet(QString dirPath);
 // bool isCurrentDirInNeedRefreshDirSet(QString dirPath);
+
+// 当前是否为深色模式
+extern bool isDarkMode;
+bool getIsSystemDarkMode();
+void setIsSystemDarkMode(bool val);
+
+// 当前页面名称
+extern QString currentPageName;
+// 文件夹页面地址
+extern QString folderUrl;
+
+// 重新绘制中心组件
+void repaintCentralWidget();
 
 #endif // GLOBALVARIABLE_H

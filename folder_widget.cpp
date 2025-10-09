@@ -24,7 +24,12 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
     // 顶部区域的组件
     QWidget *topAreaWidget = new QWidget();
     topAreaWidget->setObjectName("topAreaWidget");
-    topAreaWidget->setStyleSheet("#topAreaWidget{background-color:rgb(244, 243, 248); border-radius: 8px;} ");
+    if(getIsSystemDarkMode()){
+        topAreaWidget->setStyleSheet("#topAreaWidget{background-color:rgb(32, 30, 38); border-radius: 8px;} ");
+    }else{
+        topAreaWidget->setStyleSheet("#topAreaWidget{background-color:rgb(244, 243, 248); border-radius: 8px;} ");
+    }
+
     QHBoxLayout *topAreaLayout = new QHBoxLayout();
     topAreaWidget->setLayout(topAreaLayout);
 
@@ -46,6 +51,7 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
         // 如果上一次目录的绝对路径已经没有"/"了,代表回到首页
         if(!parentPath.contains("/")){
             getMainWindow()->setCentralWidget(new HomeWidget());
+            currentPageName = PAGE_HOME;
         }else{
             //qDebug() << RESULT_CACHE.keys();
 
@@ -198,52 +204,96 @@ FolderWidget::FolderWidget(QString path, QList<FileInfo *> resultList){
     tableView->setFocusPolicy(Qt::NoFocus);// 设置 QTableView 的焦点策略
     tableView->setMouseTracking(true);// 启用鼠标追踪
     tableView->horizontalHeader()->setDefaultAlignment(Qt::AlignLeft);
-    tableView->horizontalHeader()->setStyleSheet("QHeaderView::section {"
-                                                 "   border: none;"  // 去掉表头的边框
-                                                 "}");
 
-    tableView->setStyleSheet("QTableView{"
-                             "}"
-                             "QTableView::item:hover {"
-                             "    background-color: rgb(229, 243, 255);"  // Hover 时的背景色
-                             "    color: #000000;"             // Hover 时的文本颜色
-                             "}"
-                             "QTableView::item:selected {"
-                             "    background-color: rgb(204, 232, 255);"  // 选中时的背景色
-                             "    color: #000000;"             // 选中时的文本颜色
-                             "}"
-                             "QTableView::item:focus {"
-                             "    border: none;"  // 取消点击后的边框
-                             "    outline: none;"
-                             "}"
-                             "QTableView QScrollBar:vertical, QTableView QScrollBar:horizontal {"
-                             "    background: rgba(0, 0, 0, 0);"
-                             "    border-radius: 3px;"   // 圆角滚动条背景
-                             "    width: 6px;"          // 垂直滚动条宽度
-                             "    height: 6px;"         // 水平滚动条高度
-                             "}"
-                             "QTableView QScrollBar::handle:vertical, QTableView QScrollBar::handle:horizontal {"
-                             "    background: rgba(0, 0, 0, 30%);"   // 半透明滑块
-                             "    border-radius: 3px;"                 // 圆角滑块
-                             "    min-height: 15px;"                   // 滑块最小高度
-                             "    min-width: 15px;"                    // 滑块最小宽度
-                             "}"
-                             "QTableView QScrollBar::handle:vertical:hover, QTableView QScrollBar::handle:horizontal:hover {"
-                             "    background: rgba(0, 0, 0, 50%);"   // 悬停时的滑块颜色
-                             "}"
-                             "QTableView QScrollBar::add-line:vertical, QTableView QScrollBar::sub-line:vertical, "
-                             "QTableView QScrollBar::add-line:horizontal, QTableView QScrollBar::sub-line:horizontal {"
-                             "    border: none;"  // 隐藏箭头按钮
-                             "    background: none;"  // 不显示箭头按钮背景
-                             "}"
-                             "QTableView QScrollBar::add-page:vertical, QTableView QScrollBar::sub-page:vertical, "
-                             "QTableView QScrollBar::add-page:horizontal, QTableView QScrollBar::sub-page:horizontal {"
-                             "    background: none;"  // 隐藏滚动条区域的背景
-                             "}");
+    if(getIsSystemDarkMode()){
+        tableView->horizontalHeader()->setStyleSheet("QHeaderView::section {"
+                                                     "   padding: 5px 0 -3px 0;"
+                                                     "   border: none;"  // 去掉表头的边框
+                                                     "}");
 
-    // 右键菜单
+        tableView->setStyleSheet("QTableView{"
+                                 "}"
+                                 "QTableView::item:hover {"
+                                 "    background-color: rgb(77, 77, 77);"  // Hover 时的背景色
+                                 "    color: white;"             // Hover 时的文本颜色
+                                 "}"
+                                 "QTableView::item:selected {"
+                                 "    background-color: rgb(77, 77, 77);"  // 选中时的背景色
+                                 "    color: white;"             // 选中时的文本颜色
+                                 "}"
+                                 "QTableView::item:focus {"
+                                 "    border: none;"  // 取消点击后的边框
+                                 "    outline: none;"
+                                 "}"
+                                 "QTableView QScrollBar:vertical, QTableView QScrollBar:horizontal {"
+                                 "    background: rgba(0, 0, 0, 0);"
+                                 "    border-radius: 3px;"   // 圆角滚动条背景
+                                 "    width: 6px;"          // 垂直滚动条宽度
+                                 "    height: 6px;"         // 水平滚动条高度
+                                 "}"
+                                 "QTableView QScrollBar::handle:vertical, QTableView QScrollBar::handle:horizontal {"
+                                 "    background: rgba(0, 0, 0, 30%);"   // 半透明滑块
+                                 "    border-radius: 3px;"                 // 圆角滑块
+                                 "    min-height: 15px;"                   // 滑块最小高度
+                                 "    min-width: 15px;"                    // 滑块最小宽度
+                                 "}"
+                                 "QTableView QScrollBar::handle:vertical:hover, QTableView QScrollBar::handle:horizontal:hover {"
+                                 "    background: rgba(0, 0, 0, 50%);"   // 悬停时的滑块颜色
+                                 "}"
+                                 "QTableView QScrollBar::add-line:vertical, QTableView QScrollBar::sub-line:vertical, "
+                                 "QTableView QScrollBar::add-line:horizontal, QTableView QScrollBar::sub-line:horizontal {"
+                                 "    border: none;"  // 隐藏箭头按钮
+                                 "    background: none;"  // 不显示箭头按钮背景
+                                 "}"
+                                 "QTableView QScrollBar::add-page:vertical, QTableView QScrollBar::sub-page:vertical, "
+                                 "QTableView QScrollBar::add-page:horizontal, QTableView QScrollBar::sub-page:horizontal {"
+                                 "    background: none;"  // 隐藏滚动条区域的背景
+                                 "}");
+    }else{
+        tableView->horizontalHeader()->setStyleSheet("QHeaderView::section {"
+                                                     "   padding: 5px 0 -3px 0;"
+                                                     "   border: none;"  // 去掉表头的边框
+                                                     "}");
 
-
+        tableView->setStyleSheet("QTableView{"
+                                 "}"
+                                 "QTableView::item:hover {"
+                                 "    background-color: rgb(229, 243, 255);"  // Hover 时的背景色
+                                 "    color: #000000;"             // Hover 时的文本颜色
+                                 "}"
+                                 "QTableView::item:selected {"
+                                 "    background-color: rgb(204, 232, 255);"  // 选中时的背景色
+                                 "    color: #000000;"             // 选中时的文本颜色
+                                 "}"
+                                 "QTableView::item:focus {"
+                                 "    border: none;"  // 取消点击后的边框
+                                 "    outline: none;"
+                                 "}"
+                                 "QTableView QScrollBar:vertical, QTableView QScrollBar:horizontal {"
+                                 "    background: rgba(0, 0, 0, 0);"
+                                 "    border-radius: 3px;"   // 圆角滚动条背景
+                                 "    width: 6px;"          // 垂直滚动条宽度
+                                 "    height: 6px;"         // 水平滚动条高度
+                                 "}"
+                                 "QTableView QScrollBar::handle:vertical, QTableView QScrollBar::handle:horizontal {"
+                                 "    background: rgba(0, 0, 0, 30%);"   // 半透明滑块
+                                 "    border-radius: 3px;"                 // 圆角滑块
+                                 "    min-height: 15px;"                   // 滑块最小高度
+                                 "    min-width: 15px;"                    // 滑块最小宽度
+                                 "}"
+                                 "QTableView QScrollBar::handle:vertical:hover, QTableView QScrollBar::handle:horizontal:hover {"
+                                 "    background: rgba(0, 0, 0, 50%);"   // 悬停时的滑块颜色
+                                 "}"
+                                 "QTableView QScrollBar::add-line:vertical, QTableView QScrollBar::sub-line:vertical, "
+                                 "QTableView QScrollBar::add-line:horizontal, QTableView QScrollBar::sub-line:horizontal {"
+                                 "    border: none;"  // 隐藏箭头按钮
+                                 "    background: none;"  // 不显示箭头按钮背景
+                                 "}"
+                                 "QTableView QScrollBar::add-page:vertical, QTableView QScrollBar::sub-page:vertical, "
+                                 "QTableView QScrollBar::add-page:horizontal, QTableView QScrollBar::sub-page:horizontal {"
+                                 "    background: none;"  // 隐藏滚动条区域的背景
+                                 "}");
+    }
 
     connect(tableView, &QTableView::doubleClicked, this, &FolderWidget::onRowClicked);
 
