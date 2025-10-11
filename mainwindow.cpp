@@ -6,10 +6,10 @@
 #include <QStorageInfo>
 #include <QProgressBar>
 #include "home_widget.h"
-#include "globalvariable.h"
 #include <QMenuBar>
 #include <QGuiApplication>
 #include <QStyleHints>
+#include "globalvariable.h"
 
 using namespace std;
 
@@ -65,13 +65,6 @@ MainWidget::MainWidget(QMainWindow *parent)
     // this为主窗口
     //mainWindow = this;
     setMainWindow(this);
-
-    // QMap<QString, QList<FileInfo *>> tempMap = {{"tempKey",{}}};
-    // GlobalVariable::setResultCache(&tempMap);
-    // GlobalVariable::getResultCache()->remove("tempKey");
-
-    // 设置当前界面为首页
-    //homeWidget = centralWidget;
 }
 
 MainWidget::~MainWidget()

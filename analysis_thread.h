@@ -96,7 +96,8 @@ public:
         this->path = path;
     }
     void run() override{
-        getResultMap()->clear();
+        //qDeleteAll(resultMap);
+        resultMap.clear();
         getDirSubTaskNumMap()->clear();
 
         QDir qdir = path;
@@ -108,19 +109,27 @@ public:
         // 遍历所有文件或文件夹
         foreach (auto file, fileList) {
             // 跳过快捷方式
-            if(!file.exists() || file.isSymLink() || file.isShortcut()){
+            if(!file.exists() || file.isSymLink()){
                 continue;
             }
 
-            //qDebug() << file.fileName() << ":" << file.absoluteFilePath();
+            // insertToTempResultMap(file.fileName(), new FileInfo(
+            //                                       file.fileName(),
+            //                                       file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
+            //                                       file.size(),
+            //                                       file.isDir(),
+            //                                       file.lastModified().toString("yyyy-MM-dd hh:mm"))
+            //                  );
 
-            insertToTempResultMap(file.fileName(), new FileInfo(
-                                                  file.fileName(),
-                                                  file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
-                                                  file.size(),
-                                                  file.isDir(),
-                                                  file.lastModified().toString("yyyy-MM-dd hh:mm"))
-                             );
+            insertToTempResultMap(file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
+                                  new FileInfo(
+                                                       file.fileName(),
+                                                       file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
+                                                       file.size(),
+                                                       file.isDir(),
+                                                       file.lastModified().toString("yyyy-MM-dd hh:mm"))
+                                  );
+
 
             if(file.isDir()){
                 // 获得锁
@@ -160,14 +169,24 @@ public:
         // 等待所有子任务完成
         getThreadPool()->waitForDone();
 
-        // 取出 resultMap 的值,进行排序
-        QList<FileInfo *> list = getResultMap()->values();
-        std::sort(list.begin(), list.end(), [](FileInfo *f1, FileInfo *f2){
-            return f1->size > f2->size;
-        });
+        // 如果是全盘扫描, 则缓存结果
+        if(path.endsWith(":/")){
+            if(result_cache.contains(path)){
+                updateResultCache(path, resultMap);
+            }else{
+                insertToResultCache(path, resultMap);
+            }
+
+            // 磁盘重新扫描, 重置该盘的点击记录
+            diskEnterHistory.removeAll(path);
+        }
+
+
+        // 取出需要展示的文件夹列表
+        QList<FileInfo *> list = getNeedFileListFromResult(path, resultMap);
 
         // 将结果加入缓存
-        insertToResultMap(path, list);
+        //insertToResultMap(path, list);
 
         // 扫描结束,触发切换主窗口widget信号,进入结果页面
         emit changeWidgetSignal(path, list);

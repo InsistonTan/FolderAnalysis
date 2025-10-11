@@ -6,6 +6,7 @@
 #include <iomanip>
 #include <sstream>
 #include "globalvariable.h"
+#include <QApplication>
 
 // 引入全局变量
 // 结果缓存
@@ -14,19 +15,35 @@
 //extern QMainWindow *mainWin;
 
 void MyUtils::checkCache(QString path){
-    //qDebug() << getResultCache().values();
-
-
     // 检查缓存,如果有缓存就直接进入结果页面
-    QList<FileInfo *> cacheList = getResultCache().value(path);
-    if(!cacheList.empty()){
-        // 直接进入结果页面
-        getMainWindow()->setCentralWidget(new FolderWidget(path, cacheList));
-        currentPageName = PAGE_FOLDER;
-    }else{
-        // 主窗口切换进入分析界面
-        getMainWindow()->setCentralWidget(new AnalysisWidget(path));
+    // path.left(3)截取盘符
+    if(result_cache.contains(path.left(3))){
+        // 设置鼠标指针为忙碌
+        QApplication::setOverrideCursor(Qt::BusyCursor);
+
+        // getValueFromCache(path.left(3)) 根据盘符获取该盘缓存
+        QList<FileInfo *> cacheList = getNeedFileListFromResult(path, getValueFromCache(path.left(3)));
+        if(!cacheList.empty()){
+            // 初始化文件夹列表页面
+            auto *folder = new FolderWidget(path, cacheList);
+
+            // 恢复鼠标指针
+            QApplication::restoreOverrideCursor();
+
+            // 直接进入结果页面
+            getMainWindow()->setCentralWidget(folder);
+            currentPageName = PAGE_FOLDER;
+
+            return;
+        }
     }
+
+    // 恢复鼠标指针
+    QApplication::restoreOverrideCursor();
+
+    // 没有缓存
+    // 主窗口切换进入分析界面
+    getMainWindow()->setCentralWidget(new AnalysisWidget(path));
 }
 
 

@@ -12,6 +12,7 @@
 #include <QFile>
 #include <QDir>
 #include "globalvariable.h"
+#include <QApplication>
 
 class CustomTableView : public QTableView
 {
@@ -62,10 +63,11 @@ protected:
         QList<FileInfo *> deleteFileListSuccess;
 
         // 创建一个进度对话框
-        QProgressDialog progress("正在删除文件/文件夹: ", "取消", 0, fileList.size());
+        QProgressDialog progress("正在删除文件/文件夹: ", "取消", 0, fileList.size() * 100 + 1);
         progress.setWindowModality(Qt::WindowModal); // 确保进度框是模态的，阻止与其他窗口交互
-        progress.setMinimumDuration(0); // 设置最小显示时长，避免进度框太快消失
+        progress.setMinimumDuration(1000); // 设置最小显示时长，避免进度框太快消失
         progress.setValue(0);
+        progress.show(); // 显式显示进度对话框
 
         // 遍历文件列表，删除每个文件
         for (int i = 0; i < fileList.size(); ++i) {
@@ -77,6 +79,9 @@ protected:
 
             // 更新正在删除的文件/文件夹
             progress.setLabelText(fileList[i]->isDir ? "正在删除文件夹: " : "正在删除文件: " + fileList[i]->fileName);
+
+            // 强制更新进度对话框
+            QApplication::processEvents();
 
             QString filePath = fileList[i]->filePath;
 
@@ -94,8 +99,7 @@ protected:
                     QMessageBox::warning(nullptr, "删除失败", QString("无法删除文件: %1").arg(filePath));
                 }else{
                     deleteFileListSuccess.append(fileList[i]);
-                    // 更新进度
-                    progress.setValue(i+1);
+
                 }
             }
 
@@ -107,11 +111,28 @@ protected:
                     QMessageBox::warning(nullptr, "删除失败", QString("无法删除文件夹: %1").arg(filePath));
                 }else{
                     deleteFileListSuccess.append(fileList[i]);
-                    // 更新进度
-                    progress.setValue(i+1);
                 }
             }
+
+
+            // 更新进度
+            progress.setValue((i+1) * 100);
+
+            // 处理事件，确保UI更新
+            QApplication::processEvents();
+
+            // 添加小延迟，确保能看到进度变化
+            QThread::msleep(300/fileList.size());
         }
+
+        QThread::msleep(500);
+
+        // 设置进度为完成
+        progress.setValue(fileList.size() * 100 + 1);
+
+        // 处理事件，确保UI更新
+        QApplication::processEvents();
+
 
         // 完成删除后，显示一个信息框
         QMessageBox::information(nullptr, "完成", "文件删除完成");
@@ -149,43 +170,50 @@ protected:
         return result;
     }
 
-    void updateCache(QString currentPath, bool isFirstHandle){
-        if(currentPath.isEmpty()){
+    // 更新缓存
+    void updateCache(QList<FileInfo *> successDeleteFileList){
+        if(successDeleteFileList.isEmpty()){
             return;
         }
 
-        QString parentPath = getParentPath(currentPath);
-        if(currentPath != parentPath){
-            // 更新缓存
-            if(isFirstHandle){
-                updateResultCache(parentPath, resultList);
-            }else{
-                auto parentList = getValueFromCache(parentPath);
-                auto currentList = getValueFromCache(currentPath);
-                // 计算出当前目录的新的大小
-                long long newCurrentDirSize = 0;
-                for(auto item : currentList){
-                    newCurrentDirSize += item->size;
+        for(auto deletedFileInfo : successDeleteFileList){
+            // 文件绝对路径
+            auto filePath = deletedFileInfo->filePath;
+
+            // 截取出盘符
+            auto diskSymbol = filePath.left(3);
+
+            // 检查缓存, 该盘存在缓存
+            if(result_cache.contains(diskSymbol)){
+                // 取出缓存
+                auto cache = getValueFromCache(diskSymbol);
+
+                // 将文件路径分离
+                auto filePathSplitList = filePath.split("/");
+
+                // 将已删除的文件从缓存中移除
+                if(cache.contains(filePath)){
+                    cache.remove(filePath);
                 }
-                // 将当前目录的新的大小更新到上一级的列表里
-                for(auto& item : parentList){
-                    if(item->filePath == currentPath){
-                        item->size = newCurrentDirSize;
+
+                // 父级目录绝对路径
+                QString parentDir = "";
+
+                // 更新该文件的所有父级目录的大小
+                for(auto dir : filePathSplitList){
+                    parentDir += dir + "/";
+
+                    // 更新该父级的总大小
+                    if(cache.contains(parentDir)){
+                        cache[parentDir]->size -= deletedFileInfo->size;
                     }
                 }
 
-                // 重新排序
-                std::sort(parentList.begin(), parentList.end(), [](FileInfo *f1, FileInfo *f2){
-                    return f1->size > f2->size;
-                });
-
-                // 将改动更新得到缓存
-                updateResultCache(parentPath, parentList);
+                // 更新修改后的缓存
+                updateResultCache(diskSymbol, cache);
             }
-
-            // 继续递归
-            updateCache(parentPath, false);
         }
+
     }
 private slots:
     void deleteRow()
@@ -255,7 +283,7 @@ private slots:
                 }
 
                 // 更新缓存
-                updateCache(successDeleteFileList[0]->filePath, true);
+                updateCache(successDeleteFileList);
             }
         }
     }

@@ -12,11 +12,10 @@
 #define PAGE_FOLDER "folderPage"
 
 // 全局变量,缓存文件夹扫描的结果
-extern QMap<QString, QList<FileInfo *>> result_cache;
-QMap<QString, QList<FileInfo *>> getResultCache();
-void insertToResultMap(QString key, QList<FileInfo *> value);
-void updateResultCache(QString key, QList<FileInfo *> value);
-QList<FileInfo *> getValueFromCache(QString key);
+extern QMap<QString, QMap<QString, FileInfo*>> result_cache;
+void insertToResultCache(QString key, QMap<QString, FileInfo*> value);
+void updateResultCache(QString key, QMap<QString, FileInfo*> value);
+QMap<QString, FileInfo*> getValueFromCache(QString key);
 
 // 全局变量, 主窗口
 extern QMainWindow *mainWin;
@@ -32,6 +31,7 @@ extern QMap<QString, FileInfo*> resultMap;
 // 互斥锁
 extern QMutex mutex;
 void addSizeToMap(QString dir, long long size);
+void addSizeToMapAllDir(QString dir, long long size);
 QMap<QString, FileInfo*>* getResultMap();
 void insertToTempResultMap(QString filename, FileInfo* fileInfo);
 
@@ -59,5 +59,15 @@ extern QString folderUrl;
 
 // 重新绘制中心组件
 void repaintCentralWidget();
+
+// 从结果map中获取需要的文件信息
+QList<FileInfo *> getNeedFileListFromResult(QString path, QMap<QString, FileInfo*> result);
+
+// 记录磁盘是否已经点击过, 用于判断是否需要弹出 保存扫描记录 的弹窗
+extern QList<QString> diskEnterHistory;
+
+// 当前选择的历史分析结果文件路径
+extern QString currentSelectedHistoryFilePath;
+
 
 #endif // GLOBALVARIABLE_H

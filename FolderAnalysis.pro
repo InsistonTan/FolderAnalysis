@@ -10,6 +10,7 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    analysis_history_widget.cpp \
     analysis_widget.cpp \
     folder_widget.cpp \
     globalvariable.cpp \
@@ -21,6 +22,7 @@ SOURCES += \
 
 
 HEADERS += \
+    analysis_history_widget.h \
     analysis_thread.h \
     analysis_widget.h \
     analysis_worker.h \
@@ -34,6 +36,7 @@ HEADERS += \
     utils.h
 
 FORMS += \
+    analysis_history_widget.ui \
     mainwindow.ui
 
 # Default rules for deployment.

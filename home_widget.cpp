@@ -55,6 +55,9 @@ public:
 
             folderUrl = path;
 
+            // 重置当前选择的历史分析结果文件路径
+            currentSelectedHistoryFilePath = "";
+
             // 检查缓存,如果有缓存就直接进入结果页面
             MyUtils::checkCache(path);
 

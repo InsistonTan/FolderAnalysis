@@ -20,10 +20,18 @@ class FolderWidget : public QWidget{
 private:
     QString path;
     QList<FileInfo *> resultList;
+
+    // 初始化
+    void init();
+
+    // 对比历史分析结果
+    void compareToHistory(QList<FileInfo *> resultList);
 public:
     FolderWidget(QString path, QList<FileInfo *> resultList);
 public slots:
     void onRowClicked(const QModelIndex &index);
+
+    void onHistoryFileSelect();
 };
 
 #endif // FOLDER_WIDGET_H

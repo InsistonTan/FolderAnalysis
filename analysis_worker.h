@@ -34,7 +34,7 @@ private:
         traversalDir(dirAbslutePath, originalDir);
 
         // 将结果加进结果map里
-        addSizeToMap(originalDir, size);
+        //addSizeToMap(originalDir, size);
 
         minusOneTaskToDirSubTaskNumMap(originalDir);
 
@@ -49,19 +49,25 @@ private:
         QFileInfoList fileList = qdir.entryInfoList(QDir::Files | QDir::Hidden);
         if(!fileList.empty()){
             foreach (auto file, fileList) {
-                // 跳过快捷方式
-                if(!file.exists() || file.isSymLink() || file.isShortcut()){
+                if(!file.exists() || file.isSymLink()){
                     continue;
                 }
 
-                // 触发更新label2的信号
-                //emit updateLabelSignal2("正在扫描:" + file.fileName());
-
                 if(file.isFile()){
-                    size += file.size();
-                }else if(file.isDir()){
-                    // 递归扫描
-                    //traversalDir(file.absoluteFilePath(), originalDir);
+                    //size += file.size();
+
+                    // 记录文件信息
+                    insertToTempResultMap(file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
+                                          new FileInfo(
+                                              file.fileName(),
+                                              file.absoluteFilePath().replace("\\", "/") + (file.isDir() ? "/" : ""),
+                                              file.size(),
+                                              file.isDir(),
+                                              file.lastModified().toString("yyyy-MM-dd hh:mm"))
+                                          );
+
+                    // 汇总将该文件的大小
+                    addSizeToMapAllDir(dirPath.replace("\\", "/"), file.size());
                 }
             }
         }
