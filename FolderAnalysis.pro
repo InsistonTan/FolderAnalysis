@@ -48,3 +48,5 @@ RESOURCES += \
     staticResource.qrc
 
 RC_FILE = appicon.rc
+
+TARGET = FolderAnalysisTool

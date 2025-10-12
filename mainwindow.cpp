@@ -39,7 +39,7 @@ MainWidget::MainWidget(QMainWindow *parent)
 {
     ui->setupUi(this);
 
-    this->setWindowTitle("Disk Analysis Tool v" + QString(CURRENT_VERSION));
+    this->setWindowTitle("Folder Analysis Tool v" + QString(CURRENT_VERSION));
 
     // 适配深色模式
     if(QGuiApplication::styleHints()->colorScheme() == Qt::ColorScheme::Dark){
