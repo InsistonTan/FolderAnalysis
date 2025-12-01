@@ -1,7 +1,7 @@
 # FolderAnalysis
 ![GitHub_Stars](https://img.shields.io/github/stars/InsistonTan/FolderAnalysis?style=flat&color=ffcf49)
-[![GitHub All Releases](https://img.shields.io/github/downloads/InsistonTan/FolderAnalysis/total)](https://github.com/InsistonTan/KeyMappingsTool/releases)
-[![GitHub issues by-label](https://img.shields.io/github/issues/InsistonTan/FolderAnalysis?color=blue)](https://github.com/InsistonTan/KeyMappingsTool/issues)
+[![GitHub All Releases](https://img.shields.io/github/downloads/InsistonTan/FolderAnalysis/total)](https://github.com/InsistonTan/FolderAnalysis/releases)
+[![GitHub issues by-label](https://img.shields.io/github/issues/InsistonTan/FolderAnalysis?color=blue)](https://github.com/InsistonTan/FolderAnalysis/issues)
 
 硬盘存储占用分析工具
 
