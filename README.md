@@ -1,4 +1,10 @@
 # FolderAnalysis
+![GitHub_Stars](https://img.shields.io/github/stars/InsistonTan/FolderAnalysis?style=flat&color=ffcf49)
+[![GitHub All Releases](https://img.shields.io/github/downloads/InsistonTan/FolderAnalysis/total)](https://github.com/InsistonTan/KeyMappingsTool/releases)
+[![GitHub issues by-label](https://img.shields.io/github/issues/InsistonTan/FolderAnalysis?color=blue)](https://github.com/InsistonTan/KeyMappingsTool/issues)
+
+硬盘存储占用分析工具
+
 ## 简介
 本项目基于QT框架(QT6.x)开发, 实现硬盘存储占用分析, 通过扫描硬盘上的文件夹和文件, 根据文件夹和文件的总大小进行倒序展示. 还支持保存当前分析结果, 可以与已保存的结果进行对比分析 
 
